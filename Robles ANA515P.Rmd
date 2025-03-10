@@ -19,7 +19,7 @@ library(stringr)
 survey_s1 = read_excel("/Users/eli/Downloads/survey.xlsx", sheet = 1) #Reads the first sheet
 survey_s2 = read_excel("/Users/eli/Downloads/survey.xlsx", sheet = 2) #Reads the second sheet
 merged_survey <- rbind(survey_s1, survey_s2) #Combines the two sheets into one data frame
-dropped_survey <- drop_na(merged_survey) #Dropped rows with NAs
+dropped_survey <- drop_na(merged_survey) #Dropped rows with NAs. These rows contains multiple NA/missing values, which would skew the data and provide incomplete information.
 
 
 #Cleaning the Age Variable
@@ -44,20 +44,26 @@ data_stateCA <- data_countryUS %>%
   mutate(state = ifelse(state == "California", "CA", state)) #Combines CA and California state values by renaming California values. This makes consistent formatting.
 data_stateNY <- data_stateCA %>%
   mutate(state = ifelse(state == "New York", "NY", state)) #Combines NY and New York state values by renaming New York values. This makes consistent formatting.
+
+#Note: Cleaning was focused on the demographic variables as they establish the baseline for analysis.
 ```
 # Visual 1: Pie Chart for Gender
 ```{r Visual 1, echo=FALSE, message=FALSE}
 # Visual 1: Pie Chart for Gender
 gender_counts <- as.data.frame(table(data_stateNY$Gender)) #Makes a frequency table for the Gender variable
-#the following plots the freq for the Gender varaibles in a pie chart
+#the following plots the freq for the Gender variables in a pie chart
 ggplot(gender_counts, aes(x = "", y = Freq, fill = Var1)) + 
   geom_bar(stat = "identity", width = 1) +
   coord_polar("y", start = 0) +
   labs(title = "Gender Distribution", fill = "Gender")
+
+#This visual displays the gender distribution and its findings show that the gender majority is male. Therefore, it is recommended that future studies acknowledge the limitations this gender gap entails and understands that it might also skew results. 
 ```
 
 # Visual 2: Histogram of Age
 ```{r Visual 2, echo=FALSE, message=FALSE}
 #Visual 2: Histogram of Age
 hist(data_stateNY$Age, main="Histogram for Age", xlab="Age") #makes a histogram for the age variable distribution
+
+#This visual for the distribution of age shows that the majority of participants were between 20 and 40 years old. In context, the age frequencies might help explain the mental health findings of the study, as different ages/generations experience different priorities and worries.
 ```
