@@ -1,0 +1,63 @@
+---
+title: "Robles ANA515P"
+author: "Elizabeth Robles"
+date: "2025-02-20"
+output: 
+   html_document:
+          theme:
+              bootswatch: yeti
+---
+```{r cleaning, echo=FALSE, message=FALSE}
+#Loads the packages required
+library(readxl) 
+library(tidyverse) 
+library(tidyr)
+library(dplyr)
+library(stringr)
+
+#Importing, reading, merging, and removing NAs from the file
+survey_s1 = read_excel("/Users/eli/Downloads/survey.xlsx", sheet = 1) #Reads the first sheet
+survey_s2 = read_excel("/Users/eli/Downloads/survey.xlsx", sheet = 2) #Reads the second sheet
+merged_survey <- rbind(survey_s1, survey_s2) #Combines the two sheets into one data frame
+dropped_survey <- drop_na(merged_survey) #Dropped rows with NAs
+
+
+#Cleaning the Age Variable
+age_survey <- filter(dropped_survey, Age>0 & Age<99) #Removed rows with ages less than 0 and greater than 100. I decided to do this to remove outliers, which are unrealistic ages.
+
+#Cleaning the Gender Variable
+data_women <- age_survey %>%
+  mutate(Gender = ifelse(str_detect(Gender, "W|w|F|f"), "Female", Gender)) #Combines all values that contain these letters to "Female" to have clear formatting. The data was checked beforehand to confirm that only female values contain these letters.
+data_man <- data_women %>%
+  mutate(Gender = ifelse(str_detect(Gender, "(^M)|(^m)|Male|Guy|(kinda male)"), "Male", Gender)) #Combines all values that start with these letters or contains these words to "Male" to have clear formatting.
+data_gender <- data_man %>%
+  mutate(Gender = ifelse(Gender != "Male" & Gender != "Female", "Other", Gender)) #If values do not fit into traditional Male or Female values, renames them to "Other" to make formatting clear.
+
+#Cleaning the Country Variable
+data_countryUK <- data_gender %>%
+  mutate(Country = ifelse(Country == "UK", "United Kingdom", Country)) #Combines UK and United Kingdom country values by renaming UK values. This makes consistent formatting.
+data_countryUS <- data_countryUK %>%
+  mutate(Country = ifelse(Country == "US", "United States", Country)) #Combines US and United States country values by renaming US values. This makes consistent formatting.
+
+#Cleaning the State Variable
+data_stateCA <- data_countryUS %>%
+  mutate(state = ifelse(state == "California", "CA", state)) #Combines CA and California state values by renaming California values. This makes consistent formatting.
+data_stateNY <- data_stateCA %>%
+  mutate(state = ifelse(state == "New York", "NY", state)) #Combines NY and New York state values by renaming New York values. This makes consistent formatting.
+```
+# Visual 1: Pie Chart for Gender
+```{r Visual 1, echo=FALSE, message=FALSE}
+# Visual 1: Pie Chart for Gender
+gender_counts <- as.data.frame(table(data_stateNY$Gender)) #Makes a frequency table for the Gender variable
+#the following plots the freq for the Gender varaibles in a pie chart
+ggplot(gender_counts, aes(x = "", y = Freq, fill = Var1)) + 
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  labs(title = "Gender Distribution", fill = "Gender")
+```
+
+# Visual 2: Histogram of Age
+```{r Visual 2, echo=FALSE, message=FALSE}
+#Visual 2: Histogram of Age
+hist(data_stateNY$Age, main="Histogram for Age", xlab="Age") #makes a histogram for the age variable distribution
+```
